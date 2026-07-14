@@ -1,17 +1,27 @@
 # DeleteTweets
 
-Enumerate **your own** tweets and bulk-delete the ones that match a set of
-keywords — talking directly to X's (Twitter's) internal GraphQL API using your
-browser session cookies. No developer account, no API keys, no paid tier.
+A small toolkit for cleaning up **your own** X (Twitter) account — talking
+directly to X's internal GraphQL / 1.1 APIs using your browser session cookies.
+No developer account, no API keys, no paid tier.
 
-It was built for one very specific job: *"scan everything I've posted, find the
-tweets about a person / relationship / whatever, and get rid of them."* You give
-it a keyword list, it shows you every post that matches, and — only after you
-confirm — it deletes them.
+Every tool follows the same **review-first** model: scan, classify, write the
+matches to a file you read and prune, then act on what's left. Nothing is
+removed until you confirm.
 
-> ⚠️ **Deletion is permanent.** There is no undo, no trash, no recycle bin.
-> This tool defaults to a **dry run** and makes you review the exact list
+## The tools
+
+| Script | What it does |
+| --- | --- |
+| [`delete_matching_tweets.py`](delete_matching_tweets.py) | Enumerate your posts and delete the ones matching a keyword set (originals + reposts). → [docs](docs/keywords.md) |
+| [`manage_follows.py`](manage_follows.py) | Scan following/followers, flag egirl/camgirl/promo **or** junk/spam/inactive/non-mutual accounts, then unfollow / remove-follower. → [docs](docs/managing-follows.md) |
+| [`manage_dms.py`](manage_dms.py) | Enumerate DM threads, flag affection/sexual ones (by content + partner profile), then delete whole threads. → [docs](docs/managing-dms.md) |
+
+> ⚠️ **These actions are permanent.** There is no undo, no trash, no recycle
+> bin. Each tool defaults to a **dry run** and makes you review the exact list
 > before anything is removed. Keep it that way until you're sure.
+
+The rest of this README focuses on the tweet tool; the follows and DM tools work
+the same way and are documented in [docs/](docs/).
 
 ---
 
@@ -289,6 +299,8 @@ password.
 - [docs/how-it-works.md](docs/how-it-works.md) — the API, pagination, response shape
 - [docs/getting-cookies.md](docs/getting-cookies.md) — extracting `auth_token` / `ct0`
 - [docs/keywords.md](docs/keywords.md) — designing a keyword set, avoiding false positives
+- [docs/managing-follows.md](docs/managing-follows.md) — following/followers cleanup (egirl + junk + non-mutual)
+- [docs/managing-dms.md](docs/managing-dms.md) — DM thread cleanup
 - [docs/refreshing-query-ids.md](docs/refreshing-query-ids.md) — updating stale query IDs
 - [examples/](examples/) — runnable snippets
 

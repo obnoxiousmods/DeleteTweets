@@ -1,10 +1,18 @@
 # ---- Secrets: NEVER commit real credentials ----
 cookies.json
 *.cookies.json
-matches.json
-*.matches.json
 .env
 .env.*
+
+# ---- Local scan output (may contain your tweets/DMs/contacts) ----
+matches.json
+*.matches.json
+follows.json
+followers.json
+following.json
+dms.json
+review_list.txt
+*.review.json
 
 # ---- Python ----
 __pycache__/
