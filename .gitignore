@@ -11,8 +11,11 @@ follows.json
 followers.json
 following.json
 dms.json
+dms_all.json
+*_action.json
 review_list.txt
 *.review.json
+*.local.json
 
 # ---- Python ----
 __pycache__/

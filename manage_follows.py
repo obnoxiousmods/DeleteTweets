@@ -245,6 +245,13 @@ def get_self_rest_id(cookies):
 
 def iter_accounts(client, rest_id, kind, debug=False):
     """Yield account dicts from your Following or Followers list."""
+    # The GraphQL Followers persisted-query hash published in the web bundle
+    # 404s against the API (it lives in an out-of-sync lazy chunk), so we use
+    # the still-working legacy 1.1 followers/list.json for followers.
+    if kind == "followers":
+        yield from _iter_followers_v11(client, debug=debug)
+        return
+
     qid = QID_FOLLOWING if kind == "following" else QID_FOLLOWERS
     op = "Following" if kind == "following" else "Followers"
     cursor = None
@@ -287,6 +294,63 @@ def iter_accounts(client, rest_id, kind, debug=False):
         if not new_cursor or new_cursor == cursor or page_count == 0:
             break
         cursor = new_cursor
+
+
+def _iter_followers_v11(client, debug=False):
+    """Yield follower account dicts via the legacy 1.1 followers/list endpoint."""
+    cursor = "-1"
+    seen = set()
+    while cursor and cursor != "0":
+        r = client.get(
+            "https://x.com/i/api/1.1/followers/list.json",
+            params={"count": 200, "cursor": cursor, "skip_status": "true",
+                    "include_user_entities": "true"},
+        )
+        if r.status_code == 429:
+            reset = int(r.headers.get("x-rate-limit-reset", time.time() + 60))
+            wait = max(1, reset - int(time.time()))
+            print(f"  rate limited, sleeping {wait}s...")
+            time.sleep(wait)
+            continue
+        r.raise_for_status()
+        data = r.json()
+        users = data.get("users", [])
+        page_count = 0
+        for u in users:
+            uid = u.get("id_str")
+            if not uid or uid in seen:
+                continue
+            seen.add(uid)
+            page_count += 1
+            url = ""
+            urls = u.get("entities", {}).get("url", {}).get("urls", [])
+            if urls:
+                url = urls[0].get("expanded_url") or urls[0].get("display_url") or ""
+            yield {
+                "id": uid,
+                "screen_name": u.get("screen_name"),
+                "name": u.get("name"),
+                "description": u.get("description", ""),
+                "url": url,
+                "created_at": u.get("created_at"),
+                "statuses_count": u.get("statuses_count"),
+                "followers_count": u.get("followers_count"),
+                "friends_count": u.get("friends_count"),
+                "media_count": u.get("media_count"),
+                "favourites_count": u.get("favourites_count"),
+                "default_profile_image": u.get("default_profile_image"),
+                "default_profile": u.get("default_profile"),
+                "is_blue_verified": u.get("ext_is_blue_verified"),
+                "i_follow_them": bool(u.get("following")),
+                "they_follow_me": bool(u.get("followed_by", True)),
+            }
+        cursor = data.get("next_cursor_str", "0")
+        if debug:
+            rem = r.headers.get("x-rate-limit-remaining")
+            print(f"  page: +{page_count} (total {len(seen)}), "
+                  f"cursor={cursor}, rate-remaining={rem}")
+        if page_count == 0:
+            break
 
 
 def _find_entries(data):

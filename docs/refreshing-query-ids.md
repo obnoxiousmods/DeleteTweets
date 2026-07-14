@@ -92,3 +92,19 @@ curl -s -o /dev/null -w '%{http_code}\n' -G \
 
 `200` = good. `404` = wrong/stale ID. `400` = ID is fine but you're missing a
 required feature flag (the body names it). `429` = rate limited, wait.
+
+## Ops whose bundle ID 404s
+
+A few operations (`UserTweetsAndReplies`, `Followers`) publish a persisted-query
+hash in the main bundle that 404s against the API — the live hash lives in an
+on-demand chunk that's out of sync with the metadata table. The tools work
+around these:
+
+- **Tweets:** `manage`/`delete_matching_tweets.py` uses `UserTweets` (Posts tab)
+  instead of `UserTweetsAndReplies`.
+- **Followers:** `manage_follows.py` falls back to the legacy
+  `GET 1.1/followers/list.json` (cursor-paginated, full user objects incl.
+  `following`/`followed_by` flags). `Following` still uses GraphQL.
+
+If you want the GraphQL versions, capture the real hash from the network tab
+while loading that exact page in a logged-in browser, then slot it in.

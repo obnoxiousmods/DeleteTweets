@@ -140,7 +140,8 @@ def fetch_conversation_text(client, conv_id, debug=False):
             eid = (e.get("message") or e.get("conversation_read_marker")
                    or {}).get("id")
             if eid:
-                min_id = eid if min_id is None else min(min_id, int(eid))
+                eid = int(eid)
+                min_id = eid if min_id is None else min(min_id, eid)
         pages += 1
         status = conv.get("status")
         if not entries or status == "AT_END" or not min_id or pages > 40:
