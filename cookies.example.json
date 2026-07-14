@@ -1,0 +1,7 @@
+{
+  "auth_token": "PASTE_YOUR_auth_token_COOKIE_HERE",
+  "ct0": "PASTE_YOUR_ct0_COOKIE_HERE",
+  "twid": "u=YOUR_NUMERIC_USER_ID",
+  "guest_id": "OPTIONAL",
+  "lang": "en"
+}
